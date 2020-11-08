@@ -1,0 +1,81 @@
+{% extends "layout.njk" %}
+
+{% block backgroundHeader %}
+  <header>
+    <nav class="menu-admin">
+      <div class="logotipo-admin">
+        <a href="/admin/receitas"><img src="/assets/logo-admin.png" alt="Foodfy"></a>
+      </div>
+    </nav>
+  </header>
+{% endblock %}  
+
+{% block header %} {% endblock %}
+
+{% block content %}
+  <div class="recipeDescription">
+    <div class="recipeTitle">
+      <h1>Receita: {{item.title}}</h1>
+      <a href="/admin/receitas/{{item.index}}/editar">Editar receita</a>
+    </div>
+    
+    <div class="recipe-header">
+      <img src="{{item.recipe_url}}" alt="imagem da receita de {{item.title}}">
+      <h1>{{item.title}}</h1>
+      <p>{{item.author}}</p>
+    </div>
+
+    <div class="recipe-content">
+      <div class="ingredients">
+        
+        <div class="recipe-content-header">
+          <h2>Ingredientes</h2>
+          <h6>ESCONDER</h6>
+        </div>
+
+        <div class="info-content visible">
+          <ul>
+            {% for ingredient in item.ingredients%}
+              <li>{{ingredient}}</li>
+            {% endfor %}
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="recipe-content">
+      <div class="preparation">
+
+        <div class="recipe-content-header">
+          <h2>Preparação</h2>
+          <h6>ESCONDER</h6>
+        </div>
+
+        <div class="info-content visible">
+          <ul>
+            {% for preparation in item.preparations%}
+            <li>{{preparation}}</li>
+            {% endfor %}
+          </ul>
+        </div>
+
+      </div>   
+    </div>
+
+    <div class="recipe-content">
+      <div class="information">
+        <div class="recipe-content-header">
+          <h2>Informações</h2>
+          <h6>ESCONDER</h6>
+        </div>
+
+        <div class="info-content visible">
+          <p>{{item.information}}</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends 'layout.njk' %}
+
+{% block backgroundHeader %}
+  <header>
+    <nav class="menu-admin">
+      <div class="logotipo-admin">
+        <a href="/admin/receitas"><img src="/assets/logo-admin.png" alt="Foodfy"></a>
+      </div>
+    </nav>
+  </header>
+{% endblock %} 
+
+{% block header %} {% endblock %}
+
+{% block content %}
+  <main>
+    <form action="/admin/receitas?_method=PUT" method="POST">
+      <div class="formRecipeHeader">
+        <h1>Editando receita</h1>
+        <div>
+          <button id ="deleteButton" type="submit" form="form-delete">Deletar</button>
+          <button type="submit">Salvar receita</button>
+        </div>
+      </div>
+      
+      {% include "admin/fields.njk" %}
+
+      <input type="hidden" name="index" value="{{item.index}}">
+    </form>
+
+    <form id="form-delete" action="/admin/receitas?_method=DELETE" method="POST" onsubmit="return confirm('Deseja deletar?')">
+      <input type="hidden" name="index" value="{{item.index}}">
+    </form>
+  </main>
+
+{% endblock %}
