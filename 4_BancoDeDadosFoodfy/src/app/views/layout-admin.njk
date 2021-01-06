@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+
+<html>
+  
+  <head>
+    {% block head %}
+    <title>Foodfy</title>
+    {% endblock %}
+    
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+
+  <body>
+    <div>
+      <header class="header-background">
+        <nav class="wrapper menu-admin">
+          <div class="logotipo-admin">
+            <a href="/admin/receitas"><img src="/assets/logo-admin.png" alt="Foodfy"></a>
+          </div>
+
+          <div class="links-admin">
+            <a href="/admin/receitas">Receitas</a>
+            <a href="/admin/chefs">Chefs</a>
+          </div>
+        </nav>
+      </header>  
+    </div>
+
+    <div class="wrapper">
+      {% block content %} {% endblock %}
+    </div>
+
+    <footer>
+      <p>Todos direitos reservados, receitas Foodfy</p>
+    </footer>
+
+    <script src="/scripts.js"></script>
+
+  </body>
+</html>
