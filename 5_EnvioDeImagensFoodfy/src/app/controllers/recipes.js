@@ -120,23 +120,24 @@ module.exports = {
           return res.send("Preencha todos os campos corretamente")
       }
 
-      if(req.files.length == 0){
-        return res.send('Por favor inclua pelo menos uma imagem')
-      }
-
       let results = await Recipe.update(req.body)
       const recipeId = results.rows[0].id
 
       if(req.files.length > 0){
-        const filesPromises = req.files.map(file => File.createFiles({...file}))
-        let filesResults = await Promise.all(filesPromises)
-        
-        const recipeFilesPromises = filesResults.map(file => {
-          const fileId = file.rows[0].id
-    
-          File.createRecipeFiles({fileId, recipeId})
-        })
-        await Promise.all(recipeFilesPromises)
+        const oldFiles = await Recipe.files(req.body.id)
+        const totalFiles = oldFiles.rows.length + req.files.length
+
+        if(totalFiles <= 5){
+          const filesPromises = req.files.map(file => File.createFiles({...file}))
+          let filesResults = await Promise.all(filesPromises)
+          
+          const recipeFilesPromises = filesResults.map(file => {
+            const fileId = file.rows[0].id
+      
+            File.createRecipeFiles({fileId, recipeId})
+          })
+          await Promise.all(recipeFilesPromises)
+        }        
       }
 
       if(req.body.removed_files){
