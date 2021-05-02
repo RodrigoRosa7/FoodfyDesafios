@@ -123,6 +123,16 @@ module.exports = {
       let results = await Recipe.update(req.body)
       const recipeId = results.rows[0].id
 
+      if(req.body.removed_files){
+        const removedFiles = req.body.removed_files.split(",")
+        const lastIndex = removedFiles.length - 1
+        removedFiles.splice(lastIndex, 1)
+
+        const removedFilesPromise = removedFiles.map(FileId => File.deleteRecipeFiles(FileId, recipeId))
+
+        await Promise.all(removedFilesPromise)
+      }
+
       if(req.files.length > 0){
         const oldFiles = await Recipe.files(req.body.id)
         const totalFiles = oldFiles.rows.length + req.files.length
@@ -138,16 +148,6 @@ module.exports = {
           })
           await Promise.all(recipeFilesPromises)
         }        
-      }
-
-      if(req.body.removed_files){
-        const removedFiles = req.body.removed_files.split(",")
-        const lastIndex = removedFiles.length - 1
-        removedFiles.splice(lastIndex, 1)
-
-        const removedFilesPromise = removedFiles.map(FileId => File.deleteRecipeFiles(FileId, recipeId))
-
-        await Promise.all(removedFilesPromise)
       }
       
       return res.redirect(`/admin/receitas/${recipeId}`)
