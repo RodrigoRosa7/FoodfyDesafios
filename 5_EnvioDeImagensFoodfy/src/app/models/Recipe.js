@@ -5,12 +5,15 @@ module.exports = {
   all(){
     try {
       return db.query(`
-      SELECT DISTINCT on (recipe_files.recipe_id) recipes.*, chefs.name AS name_chef, files.path AS file_path
-      FROM recipe_files
-      FULL JOIN recipes ON (recipe_files.recipe_id = recipes.id)
+      SELECT recipes.*, chefs.name AS name_chef, single_file.path AS file_path
+      FROM recipes
       LEFT JOIN chefs ON (recipes.chef_id = chefs.id)
-      LEFT JOIN files ON (recipe_files.file_id = files.id)
-      ORDER BY recipe_files.recipe_id`)
+      LEFT JOIN (
+        SELECT DISTINCT on (recipe_files.recipe_id) recipe_files.recipe_id, files.path
+        FROM recipe_files
+        JOIN files ON recipe_files.file_id = files.id
+        ) single_file ON (single_file.recipe_id = recipes.id)
+      ORDER BY recipes.created_at DESC`)
 
     } catch (error) {
       console.log(error)
@@ -35,8 +38,9 @@ module.exports = {
         ingredients,
         preparations,
         information,
-        created_at
-      ) VALUES ($1, $2, $3, $4, $5, $6)
+        created_at,
+        update_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING id
       `
 
@@ -46,6 +50,7 @@ module.exports = {
         data.ingredients,
         data.preparations,
         data.information,
+        date(Date.now()).iso,
         date(Date.now()).iso
       ]
 
@@ -137,14 +142,17 @@ module.exports = {
       }
 
       query = `
-      SELECT DISTINCT on (recipe_files.recipe_id) recipes.*, ${totalQuery},
-      chefs.name AS name_chef, files.path AS file_path
-      FROM recipe_files 
-      FULL JOIN recipes ON (recipe_files.recipe_id = recipes.id)
+      SELECT recipes.*, ${totalQuery},
+      chefs.name AS name_chef, single_file.path AS file_path
+      FROM recipes
       LEFT JOIN chefs ON (recipes.chef_id = chefs.id)
-      LEFT JOIN files ON (recipe_files.file_id = files.id)
+      LEFT JOIN (
+        SELECT DISTINCT on (recipe_files.recipe_id) recipe_files.recipe_id, files.path
+        FROM recipe_files
+        JOIN files ON recipe_files.file_id = files.id
+        ) single_file ON (single_file.recipe_id = recipes.id)
       ${filterQuery}
-      ORDER BY recipe_files.recipe_id
+      ORDER BY recipes.update_at DESC
       LIMIT $1 OFFSET $2
       `
 
@@ -160,16 +168,18 @@ module.exports = {
       const {limit, offset} = params
 
       let query = `
-      SELECT DISTINCT on (recipe_files.recipe_id) recipes.*, 
-      (SELECT COUNT(*) FROM recipes) AS total,
-      chefs.name AS name_chef, files.path AS file_path
-      FROM recipe_files 
-      FULL JOIN recipes ON (recipe_files.recipe_id = recipes.id)
+      SELECT recipes.*, 
+      (SELECT COUNT(*) FROM recipes) AS total, chefs.name AS name_chef, single_file.path AS file_path
+      FROM recipes
       LEFT JOIN chefs ON (recipes.chef_id = chefs.id)
-      LEFT JOIN files ON (recipe_files.file_id = files.id)
+      LEFT JOIN (
+        SELECT DISTINCT on (recipe_files.recipe_id) recipe_files.recipe_id, files.path
+        FROM recipe_files
+        JOIN files ON recipe_files.file_id = files.id
+        ) single_file ON (single_file.recipe_id = recipes.id)
       `
       query = `${query}
-      ORDER BY recipe_files.recipe_id
+      ORDER BY recipes.created_at DESC
       LIMIT $1 OFFSET $2
       `
       return db.query(query, [limit, offset])

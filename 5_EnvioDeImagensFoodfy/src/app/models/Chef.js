@@ -87,13 +87,17 @@ module.exports = {
   chefRecipes(id){
     try {
       return db.query(`
-      SELECT DISTINCT on (recipe_files.recipe_id) recipes.*, chefs.name AS name_chef, files.path AS file_path
-      FROM recipe_files
-      FULL JOIN recipes ON (recipe_files.recipe_id = recipes.id)
+      SELECT recipes.*, chefs.name AS name_chef, single_file.path AS file_path
+      FROM recipes
       LEFT JOIN chefs ON (recipes.chef_id = chefs.id)
-      LEFT JOIN files ON (recipe_files.file_id = files.id)
-      where chefs.id = $1
-      ORDER BY recipe_files.recipe_id`, [id])
+      LEFT JOIN (
+        SELECT DISTINCT on (recipe_files.recipe_id) recipe_files.recipe_id, files.path
+        FROM recipe_files
+        JOIN files ON recipe_files.file_id = files.id
+        ) single_file ON (single_file.recipe_id = recipes.id)
+      WHERE chefs.id = $1
+      ORDER BY recipes.created_at DESC`, [id])
+      
     } catch (error) {
       console.log(error)
     }
