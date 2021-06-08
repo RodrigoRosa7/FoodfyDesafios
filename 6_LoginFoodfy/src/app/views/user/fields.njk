@@ -1,0 +1,66 @@
+<div class="formUser">
+  <div class="form">
+    <div>
+      <h2>Nome</h2>
+      <input 
+        id="input-name" 
+        type="text" 
+        name="name"
+        placeholder="Digite o nome completo" 
+        value="{{user.name}}"
+        required
+      >
+    </div>
+  
+    <div>
+      <h2>Email</h2>
+      <input 
+        id="input-email" 
+        type="email" 
+        name="email"
+        placeholder="Digite o email" 
+        value="{{user.email}}"
+        onblur="Validate.apply(this, 'isEmail')"
+      >
+    </div>
+  </div>
+  
+  <div>
+    <h2>Senha</h2>
+    <input 
+      id="input-password" 
+      type="password" 
+      name="password"
+      {% if not user.id %}
+        placeholder="Escolha uma senha segura"
+      {% else %}
+        placeholder="Digite sua senha para atualizar seu cadastro"
+      {% endif %}
+    >
+  </div>
+
+  {% if not user.id %}
+    <div>
+      <h2>Repita a senha</h2>
+      <input 
+        id="input-password" 
+        type="password" 
+        name="passwordRepeat"
+        placeholder="Repita a senha"
+      >
+    </div>
+  {% endif %}
+
+  <div class="checkbox">
+    <input 
+      id="checkbox-admin" 
+      type="checkbox" 
+      name="isAdmin" 
+      value="false"
+      {% if user.is_admin == "true" %}
+        checked
+      {% endif %}
+    >
+    <h2>Administrador</h2>
+  </div>
+</div>
