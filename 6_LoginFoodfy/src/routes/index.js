@@ -24,7 +24,7 @@ routes.get('/',function(req, res){
 
 //Alias
 routes.get('/accounts', function(req, res){
-  return res.redirect('/admin/users/register')
+  return res.redirect('/admin/users/login')
 })
 
 

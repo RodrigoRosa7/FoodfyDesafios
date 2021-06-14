@@ -53,7 +53,7 @@ a {
   margin-right: 30px;
 }
 
-.links-admin a:hover {
+.links-admin a:hover, .logout button:hover {
   color: #FFFFFF;
 }
 

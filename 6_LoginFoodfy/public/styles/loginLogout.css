@@ -1,0 +1,14 @@
+.logout {
+  justify-self: end
+}
+
+.logout button {
+  color: #999999;
+  font-family: Roboto;
+  font-weight: 700;
+  font-size: 15px;
+  text-transform: uppercase;
+  background-color: #111111;
+  border: none;
+  cursor: pointer;
+}

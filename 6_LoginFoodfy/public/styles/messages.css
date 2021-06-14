@@ -25,3 +25,10 @@
   background-color: #DC4747;
   border-radius: 4px;
 }
+
+.messages.success {
+  right: 18px;
+  top: 12px;
+  background-color: #01B12A;
+  border-radius: 4px;
+}

@@ -6,9 +6,9 @@ const UserController = require('../app/controllers/users')
 const Validator = require('../app/validators/user')
 
 //Login/logout
-// routes.get('/login', SessionController.loginForm)
+routes.get('/login', SessionController.loginForm)
 // routes.post('/login', SessionController.login)
-// routes.post('/logout', SessionController.logout)
+routes.post('/logout', SessionController.logout)
 
 // // forgot password / reset password
 // routes.get('/forgot-password', SessionController.forgotForm)
@@ -18,12 +18,11 @@ const Validator = require('../app/validators/user')
 
 // // user register UserController
 routes.get('/register', UserController.create)
-routes.get("/:index/editar", UserController.edit)
-
 routes.post('/register', Validator.post, UserController.post)
+routes.get("/:index/editar", Validator.edit, UserController.edit)
 
 routes.get('/', UserController.show)
-// routes.put('/', UserController.update)
+routes.put('/', Validator.update, UserController.update)
 // routes.delete('/', UserController.delete)
 
 module.exports = routes
