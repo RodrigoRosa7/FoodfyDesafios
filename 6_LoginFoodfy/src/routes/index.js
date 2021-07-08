@@ -1,9 +1,14 @@
 const express = require('express')
 const routes = express.Router()
+const {isLogged} = require('../app/middlewares/session')
 
 //Home
 const home = require('./home')
 routes.use('', home)
+
+//Profile
+const profile = require('./profile')
+routes.use('/admin/profile', profile)
 
 //Users
 const users = require('./users')
@@ -23,7 +28,7 @@ routes.get('/',function(req, res){
 })
 
 //Alias
-routes.get('/accounts', function(req, res){
+routes.get('/accounts', isLogged, function(req, res){
   return res.redirect('/admin/users/login')
 })
 

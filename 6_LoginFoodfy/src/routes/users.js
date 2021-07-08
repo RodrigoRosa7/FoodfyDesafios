@@ -3,26 +3,28 @@ const routes = express.Router()
 
 const SessionController = require('../app/controllers/session')
 const UserController = require('../app/controllers/users')
-const Validator = require('../app/validators/user')
+const UserValidator = require('../app/validators/user')
+const SessionValidator = require('../app/validators/session')
+const {onlyUsers} = require('../app/middlewares/session')
 
 //Login/logout
 routes.get('/login', SessionController.loginForm)
-// routes.post('/login', SessionController.login)
+routes.post('/login', SessionValidator.login, SessionController.login)
 routes.post('/logout', SessionController.logout)
 
 // // forgot password / reset password
-// routes.get('/forgot-password', SessionController.forgotForm)
-// routes.get('/password-reset', SessionController.resetForm)
-// routes.pos('/forgot-password', SessionController.forgot)
-// routes.pos('/password-reset', SessionController.reset)
+routes.get('/forgot-password', SessionController.forgotForm)
+routes.post('/forgot-password', SessionValidator.forgot, SessionController.forgot)
+routes.get('/password-reset', SessionController.resetForm)
+routes.post('/password-reset', SessionValidator.reset, SessionController.reset)
 
-// // user register UserController
+// user register UserController
 routes.get('/register', UserController.create)
-routes.post('/register', Validator.post, UserController.post)
-routes.get("/:index/editar", Validator.edit, UserController.edit)
+routes.post('/register', UserValidator.post, UserController.post)
+routes.get("/:index/editar", UserValidator.edit, UserController.edit)
 
-routes.get('/', UserController.show)
-routes.put('/', Validator.update, UserController.update)
+// routes.get('/', onlyUsers, UserController.show)
+routes.put('/', UserValidator.update, UserController.update)
 // routes.delete('/', UserController.delete)
 
 module.exports = routes

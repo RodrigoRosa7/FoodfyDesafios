@@ -1,10 +1,6 @@
 const User = require("../models/User")
 
 module.exports = {
-  create(req, res){
-    return res.render('user/register')
-  },
-
   async show(req, res){
     try {
       const {userId: id} = req.session
@@ -15,31 +11,13 @@ module.exports = {
         error: "Usuário não encontrado!"
       })
 
+      if(user.is_admin){
+        const users = await User.all()
+
+        return res.render('user/index', {users})
+      }
+
       return res.render('user/show', {user})
-
-    } catch (error) {
-      console.log(error)
-    }
-  },
-
-  async edit(req, res){
-    try {
-      const {user} = req
-
-      return res.render('user/edit', {user})
-
-    } catch (error) {
-      console.log(error)
-    }
-  },
-
-  async post(req, res){
-    try {
-      const userId = await User.create(req.body)
-
-      req.session.userId = userId
-
-      return res.redirect(`/admin/users/${userId}/editar`)
 
     } catch (error) {
       console.log(error)

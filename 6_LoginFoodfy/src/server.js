@@ -8,6 +8,11 @@ const server = express()
 
 //iniciando session para usuários
 server.use(session)
+//variável global para usar em qualquer lugar do projeto(verificar se vou realmente usar isso)
+server.use((req, res, next) => {
+  res.locals.session = req.session
+  next()
+})
 
 //middlewares
 server.use(express.urlencoded({extended: true}))

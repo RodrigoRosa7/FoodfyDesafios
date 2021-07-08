@@ -1,6 +1,5 @@
 const db = require('../../config/db')
 const {hash} = require('bcryptjs')
-const { update } = require('../controllers/users')
 
 module.exports = {
   async findOne(filters){
@@ -20,6 +19,19 @@ module.exports = {
       const results = await db.query(query)
 
       return results.rows[0]
+
+    } catch (error) {
+      console.log(error)
+    }
+  },
+
+  async all(){
+    try {
+      let query = "SELECT * FROM users"
+
+      const results = await db.query(query)
+
+      return results.rows
 
     } catch (error) {
       console.log(error)
