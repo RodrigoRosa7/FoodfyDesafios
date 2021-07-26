@@ -1,11 +1,22 @@
 const Recipe = require('../models/Recipe')
 const File = require('../models/File')
+const User = require("../models/User")
 
 module.exports = {
   async index(req, res){
     try {
-      const results = await Recipe.all()
-      let recipes = results.rows
+      const {userId: id} = req.session
+      const user = await User.findOne({where: {id}})
+
+      let recipes
+
+      if(user.is_admin){
+        const results = await Recipe.all()
+        recipes = results.rows
+      } else {
+        const results = await Recipe.allOfUser(user.id)
+        recipes = results.rows
+      }
 
       if(!recipes) return res.render('admin/recipes/index')
 
@@ -39,6 +50,14 @@ module.exports = {
 
       if(!recipe) return res.send("Receita não encontrada!")
 
+      //Valida se usuário tem acesso a Editar
+      const {userId: id} = req.session
+      const user = await User.findOne({where: {id}})
+      
+      if(!user.is_admin){
+        return res.redirect('/admin/receitas')
+      }
+
       results = await Recipe.ChefSelectOptions()
       const chefs = results.rows
 
@@ -63,6 +82,16 @@ module.exports = {
       
       if(!recipe) return res.send("Receita não encontrada!")
 
+      //validação se usuário logado pode editar a receita
+      const {userId: id} = req.session
+      const user = await User.findOne({where: {id}})
+
+      let canUserEdit = false
+
+      if(recipe.user_id == req.session.userId || user.is_admin){
+        canUserEdit = true
+      }
+
       results = await Recipe.files(recipe.id)
       let files = results.rows
 
@@ -71,7 +100,7 @@ module.exports = {
         src: `${req.protocol}://${req.headers.host}${file.path.replace("public", "")}`
       }))
 
-      return res.render(`admin/recipes/show`, {recipe, files})
+      return res.render(`admin/recipes/show`, {recipe, files, canUserEdit})
 
     } catch (error) {
       console.log(error)
@@ -90,6 +119,8 @@ module.exports = {
       if(req.files.length == 0){
         return res.send('Por favor inclua pelo menos uma imagem')
       }
+
+      req.body.userId = req.session.userId
 
       let results = await Recipe.create(req.body)
       const recipeId = results.rows[0].id

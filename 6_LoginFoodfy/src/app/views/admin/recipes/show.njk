@@ -4,7 +4,9 @@
   <div class="recipeDescription">
     <div class="recipeTitle">
       <h1>Receita: {{recipe.title}}</h1>
+      {% if canUserEdit %}
       <a href="/admin/receitas/{{recipe.id}}/editar">Editar receita</a>
+      {% endif %}
     </div>
     
     <div class="recipe-header">

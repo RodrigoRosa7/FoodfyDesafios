@@ -1,5 +1,6 @@
 const Chef = require('../models/Chef')
 const File = require('../models/File')
+const User = require('../models/User')
 
 module.exports = {
   async index(req, res){
@@ -9,12 +10,21 @@ module.exports = {
 
       if(!chefs) return res.send("Não há chefs cadastrados")
 
+      //valida se o usuário pode criar um novo chef
+      const {userId: id} = req.session
+      const user = await User.findOne({where: {id}})
+      let canUserCreate = false
+
+      if(user.is_admin){
+        canUserCreate = true
+      }
+
       chefs = chefs.map(chef =>({
         ...chef,
         avatar_path: `${req.protocol}://${req.headers.host}${chef.avatar_path.replace("public", "")}`
       }))
 
-      return res.render('admin/chefs/index', {chefs})
+      return res.render('admin/chefs/index', {chefs, canUserCreate})
     } catch (error) {
       console.log(error)
     }
@@ -31,6 +41,15 @@ module.exports = {
 
       if(!chef) return res.send("Chef não encontrado!")
 
+      //valida se o usuário pode clicar em Editar
+      const {userId: id} = req.session
+      const user = await User.findOne({where: {id}})
+      let canUserEdit = false
+
+      if(user.is_admin){
+        canUserEdit = true
+      }
+
       if(chef.avatar_path != null){
         chef.avatar_path = `${req.protocol}://${req.headers.host}${chef.avatar_path.replace("public", "")}`
       }
@@ -43,7 +62,7 @@ module.exports = {
         recipePhoto: `${req.protocol}://${req.headers.host}${recipe.file_path.replace("public", "")}`
       }))
 
-      return res.render('admin/chefs/show', {chef, recipes})
+      return res.render('admin/chefs/show', {chef, recipes, canUserEdit})
 
     } catch (error) {
       console.log(error)
@@ -56,6 +75,14 @@ module.exports = {
       const chef = results.rows[0]
 
       if(!chef) return res.send("Chef não encontrado!")
+
+      //Valida se usuário tem acesso a Editar
+      const {userId: id} = req.session
+      const user = await User.findOne({where: {id}})
+      
+      if(!user.is_admin){
+        return res.redirect('/admin/chefs')
+      }
 
       return res.render('admin/chefs/edit', {chef})
 

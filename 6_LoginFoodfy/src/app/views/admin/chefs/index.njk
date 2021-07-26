@@ -5,7 +5,9 @@
   <main>
     <div class="chefTitle">
       <h1>Gerenciar chefs</h1>
+      {% if canUserCreate %}
       <a href="/admin/chefs/criar">Cadastrar novo</a>
+      {% endif %}
     </div>
     
     <div class="indexChefs">

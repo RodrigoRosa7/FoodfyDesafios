@@ -20,6 +20,23 @@ module.exports = {
     }
   },
 
+  allOfUser(id){
+    try {
+      return db.query(`
+      SELECT recipes.*, chefs.name AS name_chef, single_file.path AS file_path
+      FROM recipes
+      LEFT JOIN chefs ON (recipes.chef_id = chefs.id)
+      LEFT JOIN (
+        SELECT DISTINCT on (recipe_files.recipe_id) recipe_files.recipe_id, files.path
+        FROM recipe_files
+        JOIN files ON recipe_files.file_id = files.id
+        ) single_file ON (single_file.recipe_id = recipes.id)
+      WHERE user_id = ${id}`)
+    } catch (error) {
+      console.log(error)
+    }
+  },
+
   ChefSelectOptions(){
     try {
       return db.query("SELECT id, name FROM chefs ORDER BY chefs.name")
@@ -39,8 +56,9 @@ module.exports = {
         preparations,
         information,
         created_at,
-        update_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+        update_at,
+        user_id
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING id
       `
 
@@ -51,7 +69,8 @@ module.exports = {
         data.preparations,
         data.information,
         date(Date.now()).iso,
-        date(Date.now()).iso
+        date(Date.now()).iso,
+        data.userId
       ]
 
       return db.query(query, values)

@@ -92,6 +92,7 @@ form .buttons div:first-child {
 form .buttons div a{
   font-size: 16px;
   color: #969696;
+  font-weight: bold;
 }
 
 form .buttons div a:hover {
@@ -126,7 +127,12 @@ form .buttons div button, .forgot-password form .buttons button, .reset-password
 }
 
 form .buttons div:last-child {
+  margin-top: 35px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.formLogin .error {
+  color: #FF3131;
 }

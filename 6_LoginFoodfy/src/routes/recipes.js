@@ -4,7 +4,7 @@ const multer = require('../app/middlewares/multer')
 const controllerRecipes = require('../app/controllers/recipes')
 const {onlyUsers} = require('../app/middlewares/session')
 
-routes.get("/", controllerRecipes.index)
+routes.get("/", onlyUsers, controllerRecipes.index)
 routes.get("/criar", onlyUsers, controllerRecipes.create)
 routes.get("/:index/editar", onlyUsers, controllerRecipes.edit)
 routes.get("/:index", onlyUsers, controllerRecipes.show)

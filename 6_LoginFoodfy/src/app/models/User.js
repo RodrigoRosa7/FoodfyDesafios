@@ -1,5 +1,7 @@
 const db = require('../../config/db')
 const {hash} = require('bcryptjs')
+const Recipe = require('../models/Recipe')
+const fs = require('fs')
 
 module.exports = {
   async findOne(filters){
@@ -89,6 +91,51 @@ module.exports = {
       await db.query(query)
 
       return
+
+    } catch (error) {
+      console.log(error)
+    }
+  },
+
+  async delete(id){
+    try {
+      let results = await db.query(`
+        SELECT recipes.*, recipe_id, file_id
+        FROM recipes
+        LEFT JOIN recipe_files ON (recipes.id = recipe_files.recipe_id)
+        WHERE recipes.user_id = $1`, [id])
+
+      const recipes = results.rows
+
+      // const allFilesPromise = recipes.map(recipe => 
+      //   Recipe.files(recipe.id))
+
+      // let promiseFilesResults = await Promise.all(allFilesPromise)
+
+      //get images
+      let files = await Promise.all(recipes.map(async recipe => {
+        const results = await db.query(`
+          SELECT *
+          FROM files
+          WHERE files.id = $1
+        `, [recipe.file_id])
+
+        return results.rows[0]
+      }))
+
+      await db.query("DELETE FROM users WHERE id = $1", [id])
+
+      // promiseFilesResults.map(results => {
+      //   results.rows.map(file => fs.unlinkSync(file.path))
+      // })
+      files.map(async file => {
+        fs.unlinkSync(file.path)
+      })
+
+      //remove images
+      return files.map(async file => {
+        await db.query(`DELETE FROM files WHERE files.id = $1`, [file.id])
+      })
 
     } catch (error) {
       console.log(error)

@@ -22,7 +22,8 @@ async function post (req, res, next){
     return res.render('user/register', fillAllFields)
   }
 
-  let {email, password, passwordRepeat} = req.body
+  let {email, isAdmin} = req.body
+
 
   const user = await User.findOne({where: {email}})
 
@@ -33,11 +34,8 @@ async function post (req, res, next){
     })
   }
 
-  if(password != passwordRepeat){
-    return res.render('user/register', {
-      user: req.body,
-      error: 'A senha é diferente!'
-    })
+  if(!isAdmin){
+    req.body.isAdmin = false
   }
 
   next()
@@ -52,12 +50,26 @@ async function edit(req, res, next){
     error: "Usuário não encontrado!"
   })
 
+  if(!user.is_admin){
+    return res.redirect('/admin/profile/')
+  }
+
   req.user = user
 
   next()
 }
 
 async function update(req, res, next){
+  let userLogin
+  
+  if(req.session.userId) {
+    let {userId: id} = req.session
+    
+    const user = await User.findOne({where: {id}})
+    
+    userLogin = user
+  }
+
   const fillAllFields = checkAllFields(req.body)
   if(fillAllFields){
     return res.render('user/edit', fillAllFields)
@@ -65,7 +77,7 @@ async function update(req, res, next){
 
   const {id, password} = req.body
 
-  if(!password){
+  if(!userLogin.is_admin && !password){
     return res.render('user/edit', {
       user: req.body,
       error: 'Preencha sua senha para atualizar o cadastro!'
@@ -74,12 +86,14 @@ async function update(req, res, next){
 
   const user = await User.findOne({where: {id}})
 
-  const passed = await compare(password, user.password)
+  if(!userLogin.is_admin){
+    const passed = await compare(password, user.password)
 
-  if(!passed) return res.render('user/edit', {
-    user: req.body,
-    error: 'Senha incorreta!'
-  })
+    if(!passed) return res.render('user/edit', {
+      user: req.body,
+      error: 'Senha incorreta!'
+    })
+  }
 
   req.user = user
 

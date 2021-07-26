@@ -51,18 +51,24 @@
   font-weight: bold;
   font-size: 14px;
   line-height: 17px;
+  display: flex;
 }
 
 .user-admin-dashboard .users .links a:not(:last-child) {
   color: var(--color-button);
 }
 
-.user-admin-dashboard .users .links a {
+.user-admin-dashboard .users .links button {
   color: #F55A5A;
+  font-weight: bold;
+  border: none;
+  background-color: white;
+  cursor: pointer;
 }
 
-.user-admin-dashboard .users .links a:hover {
-  filter: brightness(80%);
+.user-admin-dashboard .users .links button:hover {
+  color: #d13e3e;
+  transition: 200ms;
 }
 
 .user-admin-dashboard .users {

@@ -2,7 +2,7 @@
 
 {% block content %}
   <main class="user-dashboard container form">
-    <form action="/admin/users?_method=PUT" method="post">
+    <form action="/admin/users/{{user.id}}?_method=PUT" method="post">
 
       <div class="header">
         <h1>Atualizar Usuário</h1>
