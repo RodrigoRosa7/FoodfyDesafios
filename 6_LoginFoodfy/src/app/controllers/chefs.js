@@ -24,9 +24,17 @@ module.exports = {
         avatar_path: `${req.protocol}://${req.headers.host}${chef.avatar_path.replace("public", "")}`
       }))
 
-      return res.render('admin/chefs/index', {chefs, canUserCreate})
+      const { error, success } = req.session
+      req.session.error = ''
+      req.session.success = ''
+
+      return res.render('admin/chefs/index', {chefs, canUserCreate, error, success})
     } catch (error) {
       console.log(error)
+
+      req.session.error = `Erro inesperado ocorreu! Erro: ${error}`
+
+      return res.redirect(`/admin/chefs/`)
     }
   },
 
@@ -62,10 +70,18 @@ module.exports = {
         recipePhoto: `${req.protocol}://${req.headers.host}${recipe.file_path.replace("public", "")}`
       }))
 
-      return res.render('admin/chefs/show', {chef, recipes, canUserEdit})
+      const { error, success } = req.session
+      req.session.error = ''
+      req.session.success = ''
+
+      return res.render('admin/chefs/show', {chef, recipes, canUserEdit, error, success})
 
     } catch (error) {
       console.log(error)
+
+      req.session.error = `Erro inesperado ocorreu! Erro: ${error}`
+
+      return res.redirect(`/admin/chefs/`)
     }
   },
 
@@ -111,9 +127,15 @@ module.exports = {
       let results = await Chef.create(req.body, fileResult.rows[0].id)
       const chefId = results.rows[0].id
 
+      req.session.success = 'Chef cadastrado com sucesso!'
+
       return res.redirect(`/admin/chefs/${chefId}`)
     } catch (error) {
       console.log(error)
+
+      req.session.error = `Erro inesperado ocorreu! Erro: ${error}`
+
+      return res.redirect(`/admin/chefs/`)
     }
   },
 
@@ -143,10 +165,16 @@ module.exports = {
 
       }
 
+      req.session.success = 'Chef atualizado com sucesso!'
+
       return res.redirect(`/admin/chefs/${req.body.id}`)
 
     } catch (error) {
       console.log(error)
+
+      req.session.error = `Erro inesperado ocorreu! Erro: ${error}`
+
+      return res.redirect(`/admin/chefs/`)
     }
   },
 
@@ -160,10 +188,16 @@ module.exports = {
       await Chef.delete(req.body.id)
       await File.deleteFiles(chef.file_id)
 
+      req.session.success = 'Chef deletado com sucesso!'
+
       return res.redirect('/admin/chefs')
 
     } catch (error) {
       console.log(error)
+
+      req.session.error = `Erro inesperado ocorreu! Erro: ${error}`
+
+      return res.redirect(`/admin/chefs/`)
     }
   }
 }

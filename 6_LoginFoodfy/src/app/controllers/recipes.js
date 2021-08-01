@@ -25,7 +25,11 @@ module.exports = {
         recipePhoto: `${req.protocol}://${req.headers.host}${recipe.file_path.replace("public", "")}`
       }))
 
-      return res.render('admin/recipes/index', {recipes})
+      const { error, success } = req.session
+      req.session.error = ''
+      req.session.success = ''
+
+      return res.render('admin/recipes/index', {recipes, error, success})
       
     } catch (error) {
       console.log(error)
@@ -53,8 +57,8 @@ module.exports = {
       //Valida se usuário tem acesso a Editar
       const {userId: id} = req.session
       const user = await User.findOne({where: {id}})
-      
-      if(!user.is_admin){
+
+      if(recipe.user_id != user.id && !user.is_admin){
         return res.redirect('/admin/receitas')
       }
 
@@ -100,10 +104,19 @@ module.exports = {
         src: `${req.protocol}://${req.headers.host}${file.path.replace("public", "")}`
       }))
 
-      return res.render(`admin/recipes/show`, {recipe, files, canUserEdit})
+
+      const { error, success } = req.session
+      req.session.error = ''
+      req.session.success = ''
+
+      return res.render(`admin/recipes/show`, {recipe, files, canUserEdit, error, success})
 
     } catch (error) {
       console.log(error)
+
+      req.session.error = `Erro inesperado ocorreu! Erro: ${error}`
+
+      return res.redirect(`/admin/receitas/`)
     }
   },
 
@@ -135,10 +148,16 @@ module.exports = {
       })
       await Promise.all(recipeFilesPromises)
 
+      req.session.success = 'Receita cadastrada com sucesso!'
+
       return res.redirect(`/admin/receitas/${recipeId}`)
 
     } catch (error) {
       console.log(error)
+
+      req.session.error = `Erro inesperado ocorreu! Erro: ${error}`
+
+      return res.redirect(`/admin/receitas/`)
     }
   },
 
@@ -180,11 +199,17 @@ module.exports = {
           await Promise.all(recipeFilesPromises)
         }        
       }
+
+      req.session.success = 'Receita atualizada com sucesso!'
       
       return res.redirect(`/admin/receitas/${recipeId}`)
 
     } catch (error) {
       console.log(error)
+      
+      req.session.error = `Erro inesperado ocorreu! Erro: ${error}`
+      
+      return res.redirect(`/admin/receitas/`)
     }
   },
 
@@ -196,12 +221,18 @@ module.exports = {
       const removedRecipeFilesPromise = recipeFiles.map(recipeFile => File.deleteRecipeFiles(recipeFile.file_id, recipeFile.recipe_id))
       await Promise.all(removedRecipeFilesPromise)
 
-      Recipe.delete(req.body.id)
+      await Recipe.delete(req.body.id)
+
+      req.session.success = 'Receita excluída com sucesso!'
 
       return res.redirect("/admin/receitas")
 
     } catch (error) {
       console.log(error)
+
+      req.session.success = `Erro inesperado ocorreu! Erro: ${error}`
+
+      return res.redirect("/admin/receitas")
     }
   }
 }

@@ -14,7 +14,11 @@ module.exports = {
       if(user.is_admin){
         const users = await User.all()
 
-        return res.render('user/index', {users})
+        const { error, success } = req.session
+        req.session.error = ''
+        req.session.success = ''
+
+        return res.render('user/index', {users, error, success})
       }
 
       return res.render('user/show', {user})

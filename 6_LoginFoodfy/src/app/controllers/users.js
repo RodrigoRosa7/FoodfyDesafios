@@ -89,10 +89,9 @@ module.exports = {
       })
 
       //user notification that email is sended
-      return res.render('user/edit', {
-        user: newUser,
-        success: "Email com senha gerada enviado com êxito!"
-      })
+      req.session.success = 'Conta criada. Email com a senha enviado!'
+
+      return res.redirect('/admin/profile/')
 
     } catch (error) {
       console.log(error)
@@ -135,9 +134,9 @@ module.exports = {
     try {
       await User.delete(req.body.id)
       
-      return res.render("user/edit", {
-        success: "Conta deletada com sucesso!"
-      })
+      req.session.success = 'Conta excluída com sucesso!'
+
+      return res.redirect('/admin/profile/')
       
     } catch (error) {
       console.error(error)

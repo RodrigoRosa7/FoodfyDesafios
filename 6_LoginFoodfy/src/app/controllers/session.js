@@ -9,14 +9,35 @@ module.exports = {
   },
 
   login(req, res){
-    req.session.userId = req.user.id
+    try {
+      req.session.userId = req.user.id
 
-    return res.redirect('/admin/profile')
+      req.session.success = 'Login efetuado com sucesso!'
+
+      return res.redirect('/admin/profile')
+
+    } catch (error) {
+      console.error(error)
+
+      req.session.error = `Erro inesperado ocorreu! Erro: ${error}`
+
+      return res.redirect('/admin/profile')
+    }
   },
   
   logout(req, res){
-    req.session.destroy()
-    return res.redirect("/admin/users/login")
+    try {
+      req.session.destroy()
+
+      return res.redirect("/admin/users/login")
+
+    } catch (error) {
+      console.error(error)
+
+      req.session.error = `Erro inesperado ocorreu! Erro: ${error}`
+
+      return res.redirect('/admin/profile')
+    }
   },
 
   forgotForm(req, res){

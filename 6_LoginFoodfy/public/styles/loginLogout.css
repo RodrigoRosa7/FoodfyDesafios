@@ -133,6 +133,6 @@ form .buttons div:last-child {
   align-items: center;
 }
 
-.formLogin .error {
+.formLogin .error, .formUser .error {
   color: #FF3131;
 }
