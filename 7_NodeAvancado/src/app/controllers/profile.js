@@ -11,17 +11,21 @@ module.exports = {
         error: "Usuário não encontrado!"
       })
 
-      if(user.is_admin){
-        const users = await User.all()
+      const { error, success } = req.session
 
-        const { error, success } = req.session
+      if(user.is_admin){
+        const users = await User.findAll()
+
         req.session.error = ''
         req.session.success = ''
 
         return res.render('user/index', {users, error, success})
       }
+      
+      req.session.error = ''
+      req.session.success = ''
 
-      return res.render('user/show', {user})
+      return res.render('user/show', {user, error, success})
 
     } catch (error) {
       console.log(error)

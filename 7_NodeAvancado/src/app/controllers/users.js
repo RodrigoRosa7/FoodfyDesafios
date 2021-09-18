@@ -1,6 +1,10 @@
-const User = require("../models/User")
+const {hash} = require('bcryptjs')
+const {unlinkSync} = require('fs')
 const crypto = require('crypto')
 const mailer = require('../../lib/mailer')
+const User = require("../models/User")
+const Recipe = require('../models/Recipe')
+const File = require('../models/File')
 
 
 module.exports = {
@@ -54,30 +58,34 @@ module.exports = {
 
   async post(req, res){
     try {
-      const newUser = req.body
+      const {name, email, isAdmin: is_admin} = req.body
 
       //cria a senha
-      const password = crypto.randomBytes(6).toString("hex")
+      const passwordEmail = crypto.randomBytes(6).toString("hex")
 
-      newUser.password = password
+      //criptografa a senha para o banco de dados
+      const password = await hash(passwordEmail, 8)
 
-      // const userId = await User.create(newUser)
-
-      newUser.id = await User.create(newUser)
+      await User.create({
+        name, 
+        email, 
+        is_admin,
+        password
+      })
 
       //send email with link with the password
       await mailer.sendMail({
-        to: newUser.email,
+        to: email,
         from: 'no-reply@foodfy.com.br',
         subject: 'Seja bem vindo ao Foodfy',
-        html: `<h2>Olá ${newUser.name},</h2>
+        html: `<h2>Olá ${name},</h2>
         <p>
           Damos boas vindas, ao maior site de receitas do Brasil, 
           para ter acesso a sua conta utilize a senha gerada abaixo:
         </p>
         
         <h2>
-          ${password}
+          ${passwordEmail}
         <h2>
 
         <p>
@@ -132,7 +140,24 @@ module.exports = {
 
   async delete(req, res){
     try {
+      const recipes = await Recipe.recipeWithIdFiles(req.body.id)
+
+      //get images
+      let allFilesPromise = recipes.map(recipe => File.find(recipe.file_id))
+
+      let files = await Promise.all(allFilesPromise)
+
+      //delete user
       await User.delete(req.body.id)
+
+      files.map(async file => {
+        unlinkSync(file.path)
+      })
+
+      //remove images
+      files.map(async file => {
+        await File.delete(file.id)
+      })
       
       req.session.success = 'Conta excluída com sucesso!'
 

@@ -1,5 +1,4 @@
 const db = require('../../config/db')
-const { create } = require('./User')
 
 function find(filters, table){
   try {
@@ -8,9 +7,9 @@ function find(filters, table){
     if(filters){
       Object.keys(filters).map(key => {
         //WHERE | OR | AND
-        query += `${key}`
+        query += ` ${key}`
         Object.keys(filters[key]).map(field => {
-          query = `${field} = '${filters[key][field]}'`
+          query += ` ${field} = '${filters[key][field]}'`
         })
       })
     }
@@ -30,7 +29,7 @@ const Base = {
 
     return this
   },
-  async find(){
+  async find(id){
     try {
       const results = await find({where: {id}}, this.table)
 
@@ -63,19 +62,24 @@ const Base = {
   async create(fields){
     try {
       let keys = [],
-          values = []
+          values = [],
+          numbers = []
       
-      Object.keys(fields).map(key => {
+      Object.keys(fields).map((key, index, array) => {
         keys.push(key)
         values.push(fields[key])
+
+        if(index < array.length) {
+          numbers.push(`$${index + 1}`)
+        }
       })
 
       const query = `INSERT INTO ${this.table} (${keys.join(',')})
-        VALUES (${values.join(',')})
+        VALUES (${numbers.join(',')})
         RETURNING id
       `
 
-      const results = await db.query(query)
+      const results = await db.query(query, values)
 
       return results.rows[0].id
 
@@ -85,25 +89,28 @@ const Base = {
   },
   update(id, fields){
     try {
-      let update = []
+      let keys = [],
+          values = []
 
       Object.keys(fields).map(key => {
-        const line = `${key} = '${fields[key]}'`
-        update.push(line)
+        keys.push(key)
+        values.push(fields[key])
       })
 
-      let query = `UPDATE ${this.table} SET
-        ${update.join(',')} WHERE id = ${id}
+      const testeCampos = keys.map((key, index) => `${key} = '${values[index]}'`).join(",")
+
+      let query = `UPDATE ${this.table} SET ${testeCampos} 
+        WHERE id = ${id}
       `
 
       return db.query(query)
 
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   },
-  delete(id){
-    return db.query(`DELETE FROM ${this.table} WHERE id = $1`, [id])
+  async delete(id){
+    return await db.query(`DELETE FROM ${this.table} WHERE id = $1`, [id])
   }
 }
 

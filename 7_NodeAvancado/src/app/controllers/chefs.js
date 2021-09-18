@@ -1,3 +1,5 @@
+const {date} = require("../../lib/utils")
+const fs = require('fs')
 const Chef = require('../models/Chef')
 const File = require('../models/File')
 const User = require('../models/User')
@@ -5,8 +7,7 @@ const User = require('../models/User')
 module.exports = {
   async index(req, res){
     try {
-      let results = await Chef.all()
-      let chefs = results.rows
+      let chefs = await Chef.allChefs()
 
       if(!chefs) return res.send("Não há chefs cadastrados")
 
@@ -44,8 +45,7 @@ module.exports = {
 
   async show(req, res){
     try {
-      let results = await Chef.find(req.params.index)
-      const chef = results.rows[0]
+      let chef = await Chef.findChef(req.params.index)
 
       if(!chef) return res.send("Chef não encontrado!")
 
@@ -87,8 +87,7 @@ module.exports = {
 
   async edit(req, res){
     try {
-      let results = await Chef.find(req.params.index)
-      const chef = results.rows[0]
+      let chef = await Chef.findChef(req.params.index)
 
       if(!chef) return res.send("Chef não encontrado!")
 
@@ -120,16 +119,23 @@ module.exports = {
         return res.send("Por favor inclua o avatar do chef")
       }
 
-      const file = req.file
-      const filePromise = File.createFiles({...file})
-      let fileResult = await Promise.resolve(filePromise)
+      const {name} = req.body
+      const created_at = date(Date.now()).iso
 
-      let results = await Chef.create(req.body, fileResult.rows[0].id)
-      const chefId = results.rows[0].id
+      const file = req.file
+      const {filename, path} = {...file}
+      const fileResult = await File.create({name: filename, path})
+
+      const chefId = await Chef.create({
+        name, 
+        created_at, 
+        file_id: fileResult
+      })
 
       req.session.success = 'Chef cadastrado com sucesso!'
 
       return res.redirect(`/admin/chefs/${chefId}`)
+      
     } catch (error) {
       console.log(error)
 
@@ -148,20 +154,28 @@ module.exports = {
           return res.send("Preencha todos os campos corretamente")
       }
 
+      const {name, id, file_id} = req.body
+
       if(req.file){
         const file = req.file
-        const filePromise = File.createFiles({...file})
-        let fileResult = await Promise.resolve(filePromise)
 
-        await Chef.update(req.body, fileResult.rows[0].id)
+        const {filename, path} = {...file}
+        const fileResult = await File.create({name: filename, path})
+
+        await Chef.update(id,{name, file_id: fileResult})
+        
         //deleta o avatar anterior
         if(req.body.file_id != ""){
-          await File.deleteFiles(req.body.file_id)
+          const chefAvatar = await File.find(req.body.file_id)
+
+          fs.unlinkSync(chefAvatar.path)
+          
+          await File.delete(req.body.file_id)
         }
 
       } else {
         //se não alterou o avatar mantem o mesmo
-        await Chef.update(req.body, req.body.file_id)
+        await Chef.update(id, {name, file_id})
 
       }
 
@@ -180,13 +194,15 @@ module.exports = {
 
   async delete(req, res){
     try {
-      let result = await Chef.find(req.body.id)
-      const chef = result.rows[0]
-
+      const chef = await Chef.findChef(req.body.id)
+      
       if(chef.total_recipes > 0) return res.send("Não é possível excluir chef com receitas atreladas")
 
       await Chef.delete(req.body.id)
-      await File.deleteFiles(chef.file_id)
+      
+      const chefAvatar = await File.find(chef.file_id)
+      fs.unlinkSync(chefAvatar.path)
+      await File.delete(chef.file_id)
 
       req.session.success = 'Chef deletado com sucesso!'
 

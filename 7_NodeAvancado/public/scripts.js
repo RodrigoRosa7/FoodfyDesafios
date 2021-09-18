@@ -142,3 +142,19 @@ if(pagination){
 
   pagination.innerHTML = elements
 }
+
+//Image Gallery
+const ImageGallerySite = {
+  highlight: document.querySelector('.gallery .highlight > img'),
+  previews: document.querySelectorAll('.gallery-preview img'),
+
+  setImage(e) {
+    const {target} = e
+
+    ImageGallerySite.previews.forEach(preview => preview.classList.remove('active'))
+    target.classList.add('active')
+
+    ImageGallerySite.highlight.src = target.src
+    ImageGallerySite.highlight.alt = target.alt
+  }
+}

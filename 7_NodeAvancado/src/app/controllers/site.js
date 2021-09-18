@@ -4,11 +4,11 @@ const Chef = require('../models/Chef')
 module.exports = {
   async indexRecipes(req, res){
     try {
-      const results = await Recipe.all()
+      const results = await Recipe.allRecipes()
       let recipesMostViews = []
 
       for(let i = 0; i < 6; i++){
-        const obj = results.rows[i]
+        const obj = results[i]
         recipesMostViews.push(obj)
       }
 
@@ -64,13 +64,11 @@ module.exports = {
 
   async show(req, res){
     try {
-      let results = await Recipe.find(req.params.index)
-      const recipe = results.rows[0]
+      const recipe = await Recipe.findRecipe(req.params.index)
 
       if(!recipe) return res.send("Receita não encontrada!")
 
-      results = await Recipe.files(recipe.id)
-      let files = results.rows
+      let files = await Recipe.files(recipe.id)
 
       files = files.map(file => ({
         ...file,
@@ -86,8 +84,7 @@ module.exports = {
 
   async indexChefs(req, res){
     try {
-      const results = await Chef.all()
-      let chefs = results.rows
+      let chefs = await Chef.allChefs()
 
       if(!chefs) return res.send("Não há chefs cadastrados")
 
@@ -105,8 +102,7 @@ module.exports = {
 
   async showChef(req, res){
     try {
-      let results = await Chef.find(req.params.index)
-      let chef = results.rows[0]
+      let chef = await Chef.findChef(req.params.index)
 
       if(!chef) return res.send("Chef não encontrado")
 
